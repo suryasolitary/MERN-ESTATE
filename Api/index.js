@@ -26,4 +26,12 @@ app.listen(port, () => {
 app.use("/api/user", UserRouter);
 app.use("/api/auth", AuthRouter);
 
-export default app;
+app.use((err, req, res, next) => {
+  const statusCode = err.statusCode || 500;
+  const errMessage = err.message || "Inernal Server Error";
+  return res.status(statusCode).json({
+    success: false,
+    statusCode,
+    errMessage,
+  });
+});
