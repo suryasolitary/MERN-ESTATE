@@ -80,7 +80,9 @@ export default function SignUp() {
           </span>
         </Link>
       </div>
-      {Error && <p className="text-red-500 text-lg font-semibold">{Error}</p>}
+      {Error && (
+        <p className="text-red-500 text-lg font-semibold mt-5">{Error}</p>
+      )}
     </div>
   );
 }

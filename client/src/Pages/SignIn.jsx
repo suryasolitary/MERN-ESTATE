@@ -1,9 +1,18 @@
 import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import {
+  signinStart,
+  signinSuccess,
+  signinFailure,
+} from "../Redux/user/userSlice";
+import { useDispatch, useSelector } from "react-redux";
 
 export default function SignIn() {
   const [formData, setformData] = useState({});
-  const [Error, setError] = useState(null);
-  const [Loading, setLoading] = useState(false);
+  const { Error, Loading } = useSelector((state) => state.user);
+  const navigation = useNavigate();
+  const dispatch = useDispatch();
+
   //console.log(formData);
   const handleChange = (e) => {
     setformData({
@@ -15,7 +24,7 @@ export default function SignIn() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      setLoading(true);
+      dispatch(signinStart());
       const response = await fetch("/api/auth/signin", {
         method: "POST",
         headers: {
@@ -26,14 +35,13 @@ export default function SignIn() {
       const data = await response.json();
       console.log(data);
       if (data.success == false) {
-        setLoading(false);
-        setError(data.errMessage);
+        dispatch(signinFailure(data.errMessage));
         return;
       }
-      setLoading(false);
+      dispatch(signinSuccess(data));
+      navigation("/");
     } catch (err) {
-      setLoading(false);
-      setError(err);
+      dispatch(signinFailure(err));
     }
   };
 
@@ -65,9 +73,11 @@ export default function SignIn() {
       </form>
       <div className="mt-5 flex  gap-5 text-lg font-semibold">
         <p>Don't have an Account?</p>
-        <span className="text-blue-500 hover:underline cursor-pointer">
-          Sign up
-        </span>
+        <Link to="/signup">
+          <span className="text-blue-500 hover:underline cursor-pointer">
+            Sign up
+          </span>
+        </Link>
       </div>
       {Error && (
         <p className="text-lg font-semibold text-red-500 mt-4">{Error}</p>
