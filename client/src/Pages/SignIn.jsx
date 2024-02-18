@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import OAuth from "../Components/OAuth";
 import {
   signinStart,
   signinSuccess,
@@ -70,6 +71,7 @@ export default function SignIn() {
         <button className="bg-slate-700 p-3 text-white font-semibold text-xl rounded-lg hover:opacity-95 disabled:opacity-85 uppercase">
           {Loading ? `Loading...` : `Sign In`}
         </button>
+        <OAuth></OAuth>
       </form>
       <div className="mt-5 flex  gap-5 text-lg font-semibold">
         <p>Don't have an Account?</p>

@@ -19,6 +19,11 @@ const UserSchema = new mongoose.Schema(
       trim: true,
       require: true,
     },
+    profilePic: {
+      type: String,
+      default:
+        "https://cdn.vectorstock.com/i/1000x1000/51/87/student-avatar-user-profile-icon-vector-47025187.webp",
+    },
   },
   { timestamps: true, versionKey: false }
 );
