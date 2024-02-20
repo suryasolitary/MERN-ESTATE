@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
-//import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useRef } from "react";
 import {
   UpdateuserStart,
@@ -129,7 +129,7 @@ export default function Profile() {
   return (
     <div className="max-w-lg mx-auto p-5">
       <div className="flex flex-col items-center ">
-        <h1 className="text-2xl uppercase font-semibold text-center p-3 my-3">
+        <h1 className="text-2xl uppercase font-semibold text-center p-3 my-2">
           Profile
         </h1>
         <img
@@ -150,7 +150,7 @@ export default function Profile() {
           )}
         </p>
       </div>
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4 my-5">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4 my-3">
         <input
           type="file"
           ref={fileRef}
@@ -185,6 +185,12 @@ export default function Profile() {
         >
           {Loading ? `Loading...` : "Update"}
         </button>
+        <Link
+          className=" bg-green-700 text-white p-3 text-lg font-semibold text-center rounded-lg hover:opacity-90 uppercase"
+          to={"/create-listing"}
+        >
+          Create Listing
+        </Link>
       </form>
       <div className="flex justify-between">
         <p
