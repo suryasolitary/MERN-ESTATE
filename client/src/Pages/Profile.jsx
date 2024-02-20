@@ -1,6 +1,19 @@
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
+//import { useNavigate } from "react-router-dom";
 import { useRef } from "react";
+import {
+  UpdateuserStart,
+  UpdateuserSuccess,
+  UpdateuserFailure,
+  DeletedUserStart,
+  DeletedUserSuccess,
+  DeletedUserFailure,
+  SignoutUserStart,
+  SignoutUserSuccess,
+  SignoutUserFailure,
+} from "../Redux/user/userSlice.js";
 import {
   getDownloadURL,
   getStorage,
@@ -10,15 +23,18 @@ import {
 import { app } from "../firebase";
 
 export default function Profile() {
-  const { currentuser } = useSelector((state) => state.user);
+  //const navigation = useNavigate();
+  const { currentuser, Loading, Error } = useSelector((state) => state.user);
+  console.log(currentuser);
+  //console.log(currentuser.profilePic);
+  const dispatch = useDispatch();
   const [file, setfile] = useState(undefined);
   const [filePercentage, setfilePercentage] = useState(0);
   const [formData, setformData] = useState({});
   const [fileUploadError, setfileUploadError] = useState(false);
+  const [uploadFile, setuploadFile] = useState(false);
   const fileRef = useRef(null);
-  console.log(filePercentage);
-  console.log(fileUploadError);
-  console.log(formData);
+  //console.log(formData);
 
   useEffect(() => {
     if (file) {
@@ -50,6 +66,66 @@ export default function Profile() {
     );
   };
 
+  const handleChange = (e) => {
+    setformData({ ...formData, [e.target.id]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      dispatch(UpdateuserStart());
+      const response = await fetch(`/api/user/update/${currentuser._id}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+      const data = await response.json();
+      console.log(data);
+      if (data.success === false) {
+        dispatch(UpdateuserFailure(data.errMessage));
+        return;
+      }
+      setuploadFile(true);
+      dispatch(UpdateuserSuccess(data));
+    } catch (err) {
+      dispatch(UpdateuserFailure(err));
+    }
+  };
+
+  const handleDelete = async () => {
+    dispatch(DeletedUserStart());
+    try {
+      const response = await fetch(`api/user/delete/${currentuser._id}`, {
+        method: "DELETE",
+      });
+      const data = await response.json();
+      console.log(data);
+      if (data.success === false) {
+        dispatch(DeletedUserFailure(data.errMessage));
+      }
+      dispatch(DeletedUserSuccess(data));
+    } catch (Error) {
+      dispatch(DeletedUserFailure(Error.message));
+    }
+  };
+
+  const handleSignOut = async () => {
+    dispatch(SignoutUserStart());
+    try {
+      const response = await fetch("/api/auth/signout");
+      const data = await response.json();
+      console.log(data);
+      if (data.success === false) {
+        dispatch(SignoutUserFailure(data.errMessage));
+      }
+      dispatch(SignoutUserSuccess(data));
+    } catch (err) {
+      dispatch(SignoutUserFailure(err.message));
+    }
+  };
+
   return (
     <div className="max-w-lg mx-auto p-5">
       <div className="flex flex-col items-center ">
@@ -74,7 +150,7 @@ export default function Profile() {
           )}
         </p>
       </div>
-      <form className="flex flex-col gap-4 my-5">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4 my-5">
         <input
           type="file"
           ref={fileRef}
@@ -85,32 +161,49 @@ export default function Profile() {
         <input
           type="text"
           placeholder="username"
-          value={currentuser.username}
+          defaultValue={currentuser.username}
           className=" p-3 rounded-lg outline-none text-lg"
+          onChange={handleChange}
+          id="username"
         />
         <input
           type="email"
           placeholder="Email"
-          value={currentuser.email}
+          defaultValue={currentuser.email}
           className=" p-3 rounded-lg outline-none text-lg"
+          onChange={handleChange}
+          id="email"
         />
         <input
           type="password"
           placeholder="Password"
           className=" p-3 rounded-lg outline-none text-lg"
         />
-        <button className="bg-slate-700 text-white p-3 text-lg rounded-lg hover:opacity-95 cursor-pointer uppercase ">
-          update
+        <button
+          disabled={Loading}
+          className="bg-slate-700 text-white p-3 text-lg rounded-lg disabled:opacity-85 hover:opacity-95 cursor-pointer uppercase "
+        >
+          {Loading ? `Loading...` : "Update"}
         </button>
       </form>
       <div className="flex justify-between">
-        <p className="text-lg text-red-700 font-semibold cursor-pointer">
+        <p
+          onClick={handleDelete}
+          className="text-lg text-red-700 font-semibold cursor-pointer"
+        >
           Delete Account{" "}
         </p>
-        <span className="text-lg text-red-700 font-semibold cursor-pointer">
+        <span
+          onClick={handleSignOut}
+          className="text-lg text-red-700 font-semibold cursor-pointer"
+        >
           Sign Out
         </span>
       </div>
+      <p className="text-red-700 font-semibold text-lg">{Error ? Error : ""}</p>
+      <p className=" text-green-500 font-semibold text-lg text-center my-3 ">
+        {uploadFile ? `User updated SuccessFull...` : ""}
+      </p>
     </div>
   );
 }
