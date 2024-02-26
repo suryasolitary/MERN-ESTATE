@@ -1,0 +1,493 @@
+import { useState } from "react";
+import {
+  getDownloadURL,
+  getStorage,
+  ref,
+  uploadBytesResumable,
+} from "firebase/storage";
+import { useSelector } from "react-redux";
+import { app } from "../firebase";
+
+export default function CreateListing() 
+  const [files, setfile] = useState([]);
+  const [Loading, setLoading] = useState(false);
+  const [Error, setError] = useState(false);
+  console.log(Error);
+  const { currentuser } = useSelector((state) => state.user);
+  const [formData, setformData] = useState({
+    imageURL: [],
+    name: "",
+    description: "",
+    address: "",
+    type: "sell",
+    bedRooms: 1,
+    bathRooms: 1,
+    regularPrice: 50,
+    discountPrice: 50,
+    offer: false,
+    Parking: false,
+    furnished: false,
+  });
+  console.log(formData);
+  const [imageuploadError, setimageuploadError] = useState(false);
+
+  const handleClick = (e) => {
+    setLoading(true);
+    if (files.length > 0 && files.length < 7) {
+      const promises = [];
+
+      for (let i = 0; i < files.length; i++) {
+        promises.push(StoreImage(files[i]));
+      }
+      Promise.all(promises)
+        .then((url) => {
+          setformData({ ...formData, imageURL: formData.imageURL.concat(url) });
+          setimageuploadError(false);
+          setError(false);
+          setLoading(false);
+        })
+        .catch((err) => {
+          setLoading(false);
+          setError(false);
+          setimageuploadError("Image upload falid ( 2mb max per image )");
+        });
+    } else {
+      setLoading(false);
+      setError(false);
+      setimageuploadError(` You can only upload for 6 files per listing ... `);
+    }
+  };
+  const StoreImage = async (files) => {
+    return new Promise((resolve, reject) => {
+      const storage = getStorage(app);
+      const fileName = new Date().getTime() + files.name;
+      const storageRef = ref(storage, fileName);
+      const uploadTask = uploadBytesResumable(storageRef, files);
+      uploadTask.on(
+        "state_changed",
+        (snapshot) => {
+          const process =
+            (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          console.log(` uploading process ${process} % done`);
+        },
+        (error) => {
+          reject(error);
+        },
+        () => {
+          getDownloadURL(uploadTask.snapshot.ref).then((downloadurl) => {
+            resolve(downloadurl);
+          });
+        }
+      );
+    });
+  };
+
+  const handleDeleteSubmit = (index) => {
+    setformData({
+      ...formData,
+      imageURL: formData.imageURL.filter((_, i) => i !== index),
+    });
+  };
+
+  const handleChange = (e) => {
+    if (e.target.id == "sell" || e.target.id == "rent") {
+      setformData({
+        ...formData,
+        type: e.target.id,
+      });
+    }
+
+    if (
+      e.target.id == "Parking" ||
+      e.target.id == "furnished" ||
+      e.target.id == "offer"
+    ) {
+      setformData({
+        ...formData,
+        [e.target.id]: e.target.checked,
+      });
+    }
+
+    if (
+      e.target.type == "number" ||
+      e.target.type == "text" ||
+      e.target.type == "textarea"
+    ) {
+      setformData({
+        ...formData,
+        [e.target.id]: e.target.value,
+      });
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(false);
+    if (formData.imageURL.length < 1)
+      return setimageuploadError(`you must upload at least one image...`);
+    try {
+      const response = await fetch("/api/list/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...formData,
+          userRef: currentuser._id,
+        }),
+      });
+      const data = await response.json();
+      console.log(data);
+      if (data.success == false) {
+        setLoading(false);
+        setimageuploadError(data.errMessage);
+      }
+      setLoading(false);
+      setError(false);
+    } catch (err) {
+      setLoading(false);
+      setimageuploadError(err.message);
+    }
+
+
+    // html Tags 
+
+
+
+const CreateListing = () => {
+  return (
+    <main className="p-3 max-w-4xl mx-auto ">
+      <h1 className="text-2xl font-semibold text-center my-5 uppercase  underline">
+        create a Listing
+      </h1>
+      <form
+        onSubmit={handleSubmit}
+        className="flex flex-col sm:flex-row gap-5 p-3"
+      >
+        <div className="flex flex-col gap-3 flex-1 ">
+          <input
+            type="text"
+            placeholder="Name"
+            maxLength="64"
+            minLength="10"
+            id="name"
+            required
+            className="p-3 outline-none rounded-lg "
+          />
+          <textarea
+            required
+            className="p-3 rounded-lg resize-none outline-none "
+            placeholder="Description"
+            id="description"
+            maxLength="64"
+            minLength="10"
+          ></textarea>
+          <input
+            type="text"
+            placeholder="Address"
+            id="address"
+            className="p-3 rounded-lg outline-none"
+            maxLength="64"
+            minLength="10"
+          />
+          <div className="flex  gap-4 items-center flex-wrap p-3 ">
+            <div className="flex gap-3 items-center font-semibold text-slate-500">
+              <input type="checkbox" id="sell" className="w-4 h-4" />
+              <span>Sell</span>
+            </div>
+
+            <div className="flex gap-3 font-semibold text-slate-500 items-center">
+              <input type="checkbox" id="rent" className="w-4 h-4" />
+              <span>Rent</span>
+            </div>
+
+            <div className="flex gap-3 font-semibold text-slate-500 items-center">
+              <input type="checkbox" id="parking" className="w-4 h-4" />
+              <span>Parking Spot</span>
+            </div>
+
+            <div className="flex gap-3 font-semibold text-slate-500 ">
+              <input type="checkbox" id="furnished" className="w-4 h-4 " />
+              <span>Furnished</span>
+            </div>
+
+            <div className="flex gap-3 font-semibold text-slate-500">
+              <input type="checkbox" id="offer" className="w-4 h-4" />
+              <span>Offer</span>
+            </div>
+          </div>
+          <div className="flex gap-4 flex-wrap">
+            <div className="flex items-center gap-4">
+              <input
+                type="number"
+                id="beds"
+                min="1"
+                max="10"
+                required
+                className="p-2 border rounded-lg border-slate-300 outline-none "
+              />
+              <span className="font-semibold text-lg text-slate-500">Beds</span>
+            </div>
+
+            <div className="flex gap-4 items-center ">
+              <input
+                type="number"
+                id="baths"
+                min="1"
+                max="10"
+                required
+                className="p-2 border rounded-lg border-slate-300 outline-none "
+              />
+              <span className="font-semibold  text-slate-500">Baths</span>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <input
+                type="number"
+                id="regularprice"
+                min="50"
+                max="1000000"
+                required
+                className="p-3 rounded-lg outline-none  "
+              />
+              <div className="font-semibold text-slate-500">
+                <p>Regular price</p>
+                <span className="ml-5 text-xs">($/month)</span>
+              </div>
+            </div>
+
+            <div className="flex gap-4 ">
+              <input
+                type="number"
+                min="50"
+                max="1000000"
+                className="p-3 outline-none border border-slate-300 rounded-lg "
+                id="discountprice"
+              />
+              <div>
+                <p className="font-semibold text-slate-500">Discount Price</p>
+                <span className="ml-5 text-xs text-slate-500">($/month)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="flex flex-col gap-4">
+          <div className="flex  gap-3">
+            <p className="font-semibold">Image:</p>
+            <span className="text-slate-500">
+              This first image will be the cover (max 6)
+            </span>
+          </div>
+          <div className="flex gap-5">
+            <input
+              id="images"
+              accept="images/*"
+              type="file"
+              multiple
+              className="p-3 border border-slate-500"
+            />
+            <button
+              type="button"
+              className="p-3 border text-green-700 border-green-500"
+            >
+              {Loading ? `Uploading...` : "Upload"}
+            </button>
+          </div>
+          <button className="bg-slate-700  p-3  rounded-lg text-white text-lg uppercase hover:opacity-90 "></button>
+        </div>
+      </form>
+    </main>
+  );
+};
+
+
+// current code 
+
+
+import { useState } from "react";
+import {
+  getDownloadURL,
+  getStorage,
+  ref,
+  uploadBytesResumable,
+} from "firebase/storage";
+import { app } from "../firebase";
+
+const CreateListing = () => {
+  const [files, setfiles] = useState([]);
+  const [formData, setformData] = useState({
+    imageURl: [],
+  });
+  console.log(formData);
+  console.log(files);
+  console.log(files.name);
+
+  const handleimagesubmit = (e) => {
+
+    
+    if (files.length > 0 && files.length < 7) {
+      const promises = [];
+
+      for (let i = 0; i <= files.length; i++) {
+        promises.push(StoreImage(files[i]));
+      }
+      Promise.all(promises)
+        .then((url) => {
+          setformData({ ...formData, imageURl: formData.imageURl.concat(url) });
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    }
+  };
+
+  const StoreImage = async (files) => {
+    return new Promise((resolve, reject) => {
+      const storage = getStorage(app);
+      const fileName = new Date().getTime() + files.name;
+      const storageRef = ref(storage, fileName);
+      const uploadTask = uploadBytesResumable(storageRef, files);
+      uploadTask.on(
+        "state_changed",
+        (snapshot) => {
+          const process =
+            (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          console.log(` uploading process ${process} % done`);
+        },
+        (error) => {
+          reject(error);
+        },
+        () => {
+          getDownloadURL(uploadTask.snapshot.ref).then((downloadurl) => {
+            resolve(downloadurl);
+          });
+        }
+      );
+    });
+  };
+
+  return (
+    <div>
+      <main className="max-w-4xl mx-auto p-3 ">
+        <h1 className="font-semibold uppercase underline text-3xl text-center p-4 my-6 ">
+          Create Listing
+        </h1>
+        <form className="flex flex-col sm:flex-row ">
+          <div className="flex flex-col gap-4 flex-1 p-3">
+            <input
+              type="text"
+              placeholder="Name"
+              id="name"
+              maxLength="64"
+              minLength="10"
+              required
+              className="p-3 text-lg rounded-lg outline-none  "
+            />
+            <textarea
+              placeholder="Description"
+              id="description"
+              required
+              className="p-3 rounded-lg resize-none outline-none "
+            />
+            <input
+              type="text"
+              placeholder="Address"
+              required
+              className=" p-3 rounded-lg outline-none "
+            />
+            <div className="flex flex-wrap gap-6 font-semibold text-slate-500">
+              <div className="flex gap-3 items-center">
+                <input type="checkbox" id="sell" className="w-4 h-4" />
+                <span>Sell</span>
+              </div>
+              <div className="flex gap-3 items-center">
+                <input type="checkbox" id="Rent" className="w-4 h-4" />
+                <span>Rent</span>
+              </div>
+              <div className="flex gap-3 items-center">
+                <input type="checkbox" id="parking" className="w-4 h-4" />
+                <span>Parking</span>
+              </div>
+              <div className="flex gap-3 items-center">
+                <input type="checkbox" id="furnished" className="w-4 h-4" />
+                <span>Furnished</span>
+              </div>
+              <div className="flex gap-3 items-center">
+                <input type="checkbox" id="offer" className="w-4 h-4" />
+                <span>Offer</span>
+              </div>
+            </div>
+            <div className="flex gap-5 text-slate-500 font-semibold">
+              <div className="flex items-center gap-3 rounded-lg ">
+                <input
+                  type="number"
+                  id="beds"
+                  className="p-3 w-20 h-10 outline-none rounded-lg"
+                  min="1"
+                  max="10"
+                />
+                <span>Beds</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <input
+                  type="number"
+                  id="baths"
+                  className="p-3 w-20 h-10 outline-none 
+                  rounded-lg  "
+                  min="1"
+                  max="10"
+                />
+                <span>Baths</span>
+              </div>
+            </div>
+            <div className="flex flex-col gap-5">
+              <div className="flex gap-5 font-semibold text-slate-500 items-center">
+                <input type="number" className="p-3 rounded-lg w-20 h-10" />
+                <div className="flex flex-col items-center">
+                  <p>Regualr Price</p>
+                  <span className="text-sm my-1">($/month)</span>
+                </div>
+              </div>
+
+              <div className="flex  gap-5 font-semibold text-slate-500 items-center">
+                <input type="number" className="p-3 rounded-lg w-20 h-10" />
+                <div className="flex flex-col items-center">
+                  <p>Discount Price</p>
+                  <span className="text-sm my-1">($/month)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="flex flex-col flex-1 gap-3">
+            <div className="flex gap-3">
+              <h3 className="font-semibold ">Images:</h3>
+              <p>The first image will be the cover (Max-6)</p>
+            </div>
+            <div className="flex  gap-3">
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                id="images"
+                onChange={(e) => setfiles(e.target.files)}
+                className="p-3 border border-slate-300 w-full"
+              />
+              <button
+                onClick={handleimagesubmit}
+                className="border border-green-600 p-3 text-green-600 font-semibold "
+              >
+                Upload
+              </button>
+            </div>
+            <button className="bg-slate-700 p-3 text-white text-xl uppercase  rounded-lg hover:opacity-95">
+              Create List
+            </button>
+          </div>
+        </form>
+      </main>
+    </div>
+  );
+};
+
+export default CreateListing;

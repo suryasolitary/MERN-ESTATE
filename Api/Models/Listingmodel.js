@@ -60,7 +60,6 @@ const ListSchema = mongoose.Schema(
     imageUrl: {
       type: Array,
       required: true,
-      trim: true,
     },
     userRef: {
       type: String,

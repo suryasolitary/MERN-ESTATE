@@ -25,7 +25,7 @@ import { app } from "../firebase";
 export default function Profile() {
   //const navigation = useNavigate();
   const { currentuser, Loading, Error } = useSelector((state) => state.user);
-  console.log(currentuser);
+  //console.log(currentuser);
   //console.log(currentuser.profilePic);
   const dispatch = useDispatch();
   const [file, setfile] = useState(undefined);
