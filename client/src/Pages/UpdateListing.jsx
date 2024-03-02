@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   getDownloadURL,
   getStorage,
@@ -7,7 +7,7 @@ import {
 } from "firebase/storage";
 import { app } from "../firebase";
 import { useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 const CreateListing = () => {
   const [files, setfiles] = useState([]);
@@ -18,6 +18,7 @@ const CreateListing = () => {
   const [uploading, setuploading] = useState(false);
   const { currentuser } = useSelector((state) => state.user);
   const navigation = useNavigate();
+  const Params = useParams();
   const [formData, setformData] = useState({
     imageUrl: [],
     name: "",
@@ -33,6 +34,21 @@ const CreateListing = () => {
     discountPrice: 0,
   });
   //console.log(formData);
+
+  useEffect(() => {
+    const fetching = async () => {
+      const listId = Params.listid;
+      console.log(listId);
+      const response = await fetch(`/api/list/get/${listId}`);
+      const data = await response.json();
+      if (data.success === false) {
+        setError(data.errMessage);
+      }
+      console.log(data);
+      setformData(data);
+    };
+    fetching();
+  }, []);
 
   // Image upload Functionality
   const handleimagesubmit = (e) => {
@@ -134,7 +150,7 @@ const CreateListing = () => {
         return setError(`you must be upload a listing image...`);
       if (formData.regularPrice < formData.discountPrice)
         return setError(`Discount Price must be Lesserthan Regular price...`);
-      const response = await fetch("api/list/create", {
+      const response = await fetch(`/api/list/update/${Params.listid}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -163,7 +179,7 @@ const CreateListing = () => {
     <div>
       <main className="max-w-4xl mx-auto p-3 ">
         <h1 className="font-semibold uppercase underline text-3xl text-center p-4 my-6 ">
-          Create Listing
+          Update Listing
         </h1>
         <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row ">
           <div className="flex flex-col gap-4 flex-1 p-3">
@@ -357,9 +373,9 @@ const CreateListing = () => {
               ))}
             <button
               disabled={Loading || uploading}
-              className="bg-slate-700  p-3 text-white text-xl uppercase  rounded-lg hover:opacity-95 disabled:opacity-75 "
+              className="bg-slate-700  p-3 text-white text-xl uppercase  rounded-lg hover:opacity-95 disabled:opacity-75 font-semibold "
             >
-              {Loading ? `Creating...` : `create list`}
+              {Loading ? `Updateing...` : `Update list`}
             </button>
             {Error && (
               <p className="text-red-600 text-sm font-semibold">{Error}</p>
