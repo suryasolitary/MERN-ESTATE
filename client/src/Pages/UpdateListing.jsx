@@ -386,3 +386,4 @@ const CreateListing = () => {
     </div>
   );
 };
+export default CreateListing;
