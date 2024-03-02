@@ -7,14 +7,17 @@ import {
 } from "firebase/storage";
 import { app } from "../firebase";
 import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
 const CreateListing = () => {
   const [files, setfiles] = useState([]);
   const [Error, setError] = useState(false);
+  //console.log(Error);
   const [Loading, setLoading] = useState(false);
   const [imageuploadError, setimageuploadError] = useState(false);
   const [uploading, setuploading] = useState(false);
   const { currentuser } = useSelector((state) => state.user);
+  const navigation = useNavigate();
   const [formData, setformData] = useState({
     imageUrl: [],
     name: "",
@@ -27,7 +30,7 @@ const CreateListing = () => {
     bedRooms: 1,
     bathRooms: 1,
     regularPrice: 50,
-    discountPrice: 50,
+    discountPrice: 0,
   });
   //console.log(formData);
 
@@ -85,10 +88,9 @@ const CreateListing = () => {
   const handleDeleteClick = (index) => {
     setformData({
       ...formData,
-      imageURl: formData.imageUrl.filter((_, i) => i !== index),
+      imageUrl: formData.imageUrl.filter((url, i) => i !== index),
     });
   };
-
   // Create List Button Functionality
   const handleChange = (e) => {
     if (e.target.id == "sell" || e.target.id == "Rent") {
@@ -128,6 +130,10 @@ const CreateListing = () => {
     try {
       setLoading(true);
       setError(false);
+      if (formData.imageUrl.length < 1)
+        return setError(`you must be upload a listing image...`);
+      if (formData.regularPrice < formData.discountPrice)
+        return setError(`Discount Price must be Lesserthan Regular price...`);
       const response = await fetch("api/list/create", {
         method: "POST",
         headers: {
@@ -139,13 +145,14 @@ const CreateListing = () => {
         }),
       });
       const data = await response.json();
-      console.log(data);
       if (data.success == false) {
         setLoading(false);
         setError(data.errMessage);
       }
+      console.log(data);
       setLoading(false);
       setError(false);
+      navigation(`/list/${data._id}`);
     } catch (err) {
       setLoading(false);
       setError(err.message);
@@ -284,22 +291,23 @@ const CreateListing = () => {
                   <span className="text-sm my-1">($/month)</span>
                 </div>
               </div>
-
-              <div className="flex  gap-5 font-semibold text-slate-500 items-center">
-                <input
-                  type="number"
-                  id="discountPrice"
-                  min="50"
-                  max="1000000"
-                  className="p-3 rounded-lg w-20 h-10"
-                  onChange={handleChange}
-                  value={formData.discountPrice}
-                />
-                <div className="flex flex-col items-center">
-                  <p>Discount Price</p>
-                  <span className="text-sm my-1">($/month)</span>
+              {formData.offer && (
+                <div className="flex  gap-5 font-semibold text-slate-500 items-center">
+                  <input
+                    type="number"
+                    id="discountPrice"
+                    min="0"
+                    max="1000000"
+                    className="p-3 rounded-lg w-20 h-10"
+                    onChange={handleChange}
+                    value={formData.discountPrice}
+                  />
+                  <div className="flex flex-col items-center">
+                    <p>Discount Price</p>
+                    <span className="text-sm my-1">($/month)</span>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
           <div className="flex flex-col flex-1 gap-3">
@@ -347,7 +355,10 @@ const CreateListing = () => {
                   </button>
                 </div>
               ))}
-            <button className="bg-slate-700  p-3 text-white text-xl uppercase  rounded-lg hover:opacity-95">
+            <button
+              disabled={Loading || uploading}
+              className="bg-slate-700  p-3 text-white text-xl uppercase  rounded-lg hover:opacity-95 disabled:opacity-75 "
+            >
               {Loading ? `Creating...` : `create list`}
             </button>
             {Error && (

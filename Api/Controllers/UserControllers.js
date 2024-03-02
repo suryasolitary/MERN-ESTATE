@@ -1,6 +1,7 @@
 import { errHandlers } from "../utils/Error.js";
 import User from "../Models/Usermodels.js";
 import bcrypt from "bcrypt";
+import List from "../Models/Listingmodel.js";
 
 export const test = (req, res) => {
   res.status(200).json({ Message: "Api Routes Created..." });
@@ -46,5 +47,19 @@ export const deleteUser = async (req, res, next) => {
     res.status(200).json({ Message: "User Account Delected Successfull..." });
   } catch (err) {
     next(err);
+  }
+};
+
+export const getListingData = async (req, res, next) => {
+  if (req.user.id === req.params.id) {
+    try {
+      const listings = await List.find({ userRef: req.params.id });
+      //console.log(listings);
+      res.status(200).json(listings);
+    } catch (err) {
+      next(err);
+    }
+  } else {
+    next(errHandlers(401, `You can get your own Account...`));
   }
 };
