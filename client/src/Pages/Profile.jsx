@@ -263,7 +263,7 @@ export default function Profile() {
               key={list._id}
               className="border flex justify-between items-center flex-1 gap-5 my-5 shadow-lg p-3"
             >
-              <Link to={`list/${list._id}`}>
+              <Link to={`/list/${list._id}`}>
                 <img
                   className="w-25 h-20  object-contain rounded-lg shadow-lg "
                   src={list.imageUrl[0]}
@@ -271,7 +271,7 @@ export default function Profile() {
                 />
               </Link>
               <Link
-                to={`list/${list._id}`}
+                to={`/list/${list._id}`}
                 className="text-xl truncate flex-1 font-semibold hover:underline"
               >
                 <p>{list.name}</p>

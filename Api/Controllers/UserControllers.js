@@ -63,3 +63,17 @@ export const getListingData = async (req, res, next) => {
     next(errHandlers(401, `You can get your own Account...`));
   }
 };
+
+export const getuser = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return next(errHandlers(401, "User Not Found..."));
+    }
+    const { password: pass, ...rest } = user._doc;
+    console.log(rest);
+    res.status(200).json(rest);
+  } catch (err) {
+    next(err);
+  }
+};
