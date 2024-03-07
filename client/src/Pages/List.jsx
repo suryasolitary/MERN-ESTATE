@@ -99,7 +99,7 @@ export default function List() {
           )}
 
           <div className=" flex flex-col max-w-4xl mx-auto my-5 p-3 gap-3 ">
-            <p className="text-2xl text-slate-700 font-semibold">
+            <p className=" text-xl text-slate-700 font-semibold sm:text-2xl ">
               {formData.name} - ₹{" "}
               {formData.offer
                 ? formData.discountPrice.toLocaleString("en-US")
@@ -118,7 +118,7 @@ export default function List() {
               </p>
               {formData.offer && (
                 <p className="bg-green-900 w-full max-w-[200px] self-center  text-lg text-center text-white p-2 rounded-lg">
-                  ₹ {+formData.regularPrice - +formData.discountPrice}
+                  ₹ {+formData.regularPrice - +formData.discountPrice} OFF
                 </p>
               )}
             </div>

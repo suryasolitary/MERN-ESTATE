@@ -71,7 +71,6 @@ export const getuser = async (req, res, next) => {
       return next(errHandlers(401, "User Not Found..."));
     }
     const { password: pass, ...rest } = user._doc;
-    console.log(rest);
     res.status(200).json(rest);
   } catch (err) {
     next(err);

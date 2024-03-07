@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 
 export default function Contact({ formData }) {
   const [LandDetails, setLandDetails] = useState(null);
+  console.log(LandDetails);
   const [message, setmessage] = useState("");
 
   //const { currentuser } = useSelector((state) => state.user);
