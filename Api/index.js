@@ -5,7 +5,10 @@ import AuthRouter from "./Routers/AuthRouter.js";
 import UserList from "./Routers/UserList.js";
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
+import path from "path";
 dotenv.config();
+
+const __dirname = path.resolve();
 
 const app = express();
 const port = 5000;
@@ -29,6 +32,12 @@ app.listen(port, () => {
 app.use("/api/user", UserRouter);
 app.use("/api/auth", AuthRouter);
 app.use("/api/list", UserList);
+
+app.use(express.static(path.join(__dirname, "/client/dist")));
+
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "client", "dist", "index.html"));
+});
 
 app.use((err, req, res, next) => {
   const statusCode = err.statusCode || 500;
