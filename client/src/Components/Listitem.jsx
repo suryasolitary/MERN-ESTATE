@@ -24,12 +24,25 @@ export default function Listitem({ listing }) {
           <p className="text-sm text-slate-600 font-semibold  line-clamp-2">
             {listing.description}
           </p>
-          <p className="font-semibold text-lg text-slate-600">
+          <p className="font-semibold pr-2 text-lg text-slate-600">
+            ₹
             {listing.offer
               ? listing.discountPrice.toLocaleString("en-US")
               : listing.regularPrice.toLocaleString("en-US")}
-            {listing.type === "Rent" && " / Month"}
+            {listing.type === "rent" && " / Month"}
           </p>
+          <div className="flex gap-3">
+            <div className="font-semibold text-md text-slate-600">
+              {listing.bedRooms > 1
+                ? `${listing.bedRooms} Beds`
+                : `${listing.bedRooms} Bed`}
+            </div>
+            <div className="font-semibold text-md text-slate-600">
+              {listing.bat > 1
+                ? `${listing.bathRooms} Beds`
+                : `${listing.bathRooms} Bed`}
+            </div>
+          </div>
         </div>
       </Link>
     </div>

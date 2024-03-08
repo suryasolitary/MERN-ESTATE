@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { FaSearch } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 
 export default function Header() {
@@ -28,10 +29,12 @@ export default function Header() {
   return (
     <header className="bg-slate-200 p-2 shadow-lg ">
       <div className=" bg-slate-200 flex justify-between p-3 ">
-        <h1 className="flex flex-wrap items-center text-lg  sm:text-2xl font-bold">
-          <span className="text-slate-400 ">Surya's</span>
-          <span> Estate</span>
-        </h1>
+        <Link to={"/"}>
+          <h1 className="flex flex-wrap items-center text-lg  sm:text-2xl font-bold">
+            <span className="text-slate-400 ">Surya's</span>
+            <span> Estate</span>
+          </h1>
+        </Link>
         <form
           onSubmit={handleSubmit}
           className=" bg-slate-100 rounded-lg  flex items-center p-3"

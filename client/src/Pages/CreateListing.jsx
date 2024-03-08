@@ -172,7 +172,7 @@ const CreateListing = () => {
               placeholder="Name"
               id="name"
               maxLength="64"
-              minLength="10"
+              minLength="5"
               required
               className="p-3 text-lg rounded-lg outline-none  "
               onChange={handleChange}
