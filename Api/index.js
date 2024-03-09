@@ -6,9 +6,11 @@ import UserList from "./Routers/UserList.js";
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 import path from "path";
+import { fileURLToPath } from "url";
 dotenv.config();
 
-const __dirname = path.resolve();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const port = 5000;
